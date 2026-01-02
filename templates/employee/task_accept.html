@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accept Task{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Accept Task: {{ object.title }}</h2>
+                </div>
+                <div class="card-body">
+                    <p><strong>Description:</strong> {{ object.description }}</p>
+                    <p><strong>Due Date:</strong> {{ object.due_date }}</p>
+                    <p><strong>Priority:</strong> {{ object.get_priority_display }}</p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="alert alert-info">
+                            By accepting this task, you agree to start working on it.
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'tasks:task_list' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-success">Accept Task</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

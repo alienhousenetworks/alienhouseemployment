@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Project Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>{{ project.name }}</h2>
+                </div>
+                <div class="card-body">
+                    <p><strong>Description:</strong> {{ project.description }}</p>
+                    <p><strong>Manager:</strong> {{ project.manager.full_name }}</p>
+                    <p><strong>Start Date:</strong> {{ project.start_date }}</p>
+                    <p><strong>End Date:</strong> {{ project.end_date }}</p>
+                    <p><strong>Status:</strong> <span class="badge bg-{{ project.status|lower }}">{{ project.get_status_display }}</span></p>
+                    {% if project.is_overdue %}
+                        <p class="text-danger">This project is overdue!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'projects:project_update' project.pk %}" class="btn btn-primary mb-2">Update Project</a>
+                    <a href="{% url 'projects:milestone_create' project.pk %}" class="btn btn-secondary mb-2">Add Milestone</a>
+                    <a href="{% url 'projects:resource_create' project.pk %}" class="btn btn-secondary">Allocate Resource</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h4>Milestones</h4>
+            <ul class="list-group">
+                {% for milestone in milestones %}
+                    <li class="list-group-item">
+                        <strong>{{ milestone.name }}</strong> - {{ milestone.get_status_display }} (Due: {{ milestone.due_date }})
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No milestones yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h4>Resources</h4>
+            <ul class="list-group">
+                {% for resource in resources %}
+                    <li class="list-group-item">
+                        <strong>{{ resource.user.full_name }}</strong> - {{ resource.get_role_display }} ({{ resource.allocated_hours }} hours)
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No resources allocated yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Task Reports{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Task Reports</h2>
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Total Tasks</h5>
+                    <h2>{{ total_tasks }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Completed</h5>
+                    <h2>{{ completed_tasks }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <h5 class="card-title">Pending</h5>
+                    <h2>{{ pending_tasks }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <h5 class="card-title">Overdue</h5>
+                    <h2>{{ overdue_tasks }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Average Completion Time</h4>
+            <p>{{ avg_completion_time|floatformat:2 }} hours</p>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h4>Employee Performance</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Total Tasks</th>
+                        <th>Completed</th>
+                        <th>Total Hours</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in employee_stats %}
+                        <tr>
+                            <td>{{ stat.employee.user.full_name }}</td>
+                            <td>{{ stat.total_tasks }}</td>
+                            <td>{{ stat.completed_tasks }}</td>
+                            <td>{{ stat.total_hours|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

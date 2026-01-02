@@ -1,3 +1,4 @@
+
 """
 Django settings for employee_mgmt project.
 
@@ -46,6 +47,10 @@ INSTALLED_APPS = [
     'apps.submissions',
     'apps.notifications',
     'apps.core',
+    'apps.projects',
+    'analytics',
+
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -143,8 +148,43 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+AUTH_USER_MODEL = 'accounts.User'
 
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'  # Later we will create dashboards
+LOGOUT_REDIRECT_URL = '/accounts/login/'
+
+
+# Keep users logged in even after browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Session duration: 90 days
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 90 days
+
+# Refresh session expiry on every request
+SESSION_SAVE_EVERY_REQUEST = True
+import os
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'hr@alienhouse.com'
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+DEFAULT_FROM_EMAIL = 'Alienhouse HR <hr@alienhouse.com>'
+
+
+FRONTEND_URL = 'https://portal.alienhouse.com'
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Analytics{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Admin Analytics Dashboard</h1>
+
+    <form method="get" class="mb-4">
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Total Tasks</h5>
+                    <p class="card-text">{{ total_tasks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Completed Tasks</h5>
+                    <p class="card-text">{{ completed_tasks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Overdue Tasks</h5>
+                    <p class="card-text">{{ overdue_tasks }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Completion Rate</h5>
+                    <p class="card-text">{{ completion_rate|floatformat:2 }}%</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h3>Department-wise Statistics</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Department</th>
+                    <th>Total Tasks</th>
+                    <th>Completed Tasks</th>
+                    <th>Completion Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dept in dept_stats %}
+                <tr>
+                    <td>{{ dept.department }}</td>
+                    <td>{{ dept.total_tasks }}</td>
+                    <td>{{ dept.completed_tasks }}</td>
+                    <td>{{ dept.completion_rate|floatformat:2 }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <h3>Historical Trends</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Completed Tasks</th>
+                    <th>Total Tasks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trend in trends %}
+                <tr>
+                    <td>{{ trend.month|date:"M Y" }}</td>
+                    <td>{{ trend.completed }}</td>
+                    <td>{{ trend.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'analytics:export-template' 'excel' 'admin' %}?{{ request.GET.urlencode }}" class="btn btn-success">Export to Excel</a>
+        <a href="{% url 'analytics:export-template' 'pdf' 'admin' %}?{{ request.GET.urlencode }}" class="btn btn-danger">Export to PDF</a>
+    </div>
+</div>
+{% endblock %}

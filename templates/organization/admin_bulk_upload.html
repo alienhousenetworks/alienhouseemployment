@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin – Bulk Upload Employees</h2>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <input type="file" name="file" accept=".csv" required>
+  <button type="submit">Upload</button>
+</form>
+
+<p>Required Columns: Name, Email, Phone, Job Profile, Contract Months, Manager Email</p>
+{% endblock %}
