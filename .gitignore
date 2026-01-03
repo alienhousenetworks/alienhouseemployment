@@ -30,3 +30,4 @@ dump.rdb
 __pycache__/
 *.pyc
 *.pyo
+.env

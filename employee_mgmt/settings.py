@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +31,9 @@ SECRET_KEY = 'django-insecure-a0e4&p&0jqn7ldz6)$&)16*i58g3e+&%sd7t##pkkn%xais)%&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+DEBUG = os.getenv("DJANGO_DEBUG") == "True"
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS").split(",")
 
 
 # Application definition
@@ -95,19 +102,28 @@ WSGI_APPLICATION = 'employee_mgmt.wsgi.application'
 # }
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'employee_mgmt_db',      # Your PostgreSQL database name
+#         'USER': 'postgres',              # Your Postgres username
+#         'PASSWORD': 'your_password',     # Your Postgres password
+#         'HOST': 'localhost',             # Usually localhost
+#         'PORT': '5432',                  # Default Postgres port
+#     }
+# }
+
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'employee_mgmt_db',      # Your PostgreSQL database name
-        'USER': 'postgres',              # Your Postgres username
-        'PASSWORD': 'your_password',     # Your Postgres password
-        'HOST': 'localhost',             # Usually localhost
-        'PORT': '5432',                  # Default Postgres port
+        'ENGINE': os.getenv("DB_ENGINE"),
+        'NAME': os.getenv("DB_NAME"),
+        'USER': os.getenv("DB_USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD"),
+        'HOST': os.getenv("DB_HOST"),
+        'PORT': os.getenv("DB_PORT"),
     }
 }
-
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -170,21 +186,33 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 90 days
 SESSION_SAVE_EVERY_REQUEST = True
 import os
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = 'hr@alienhouse.com'
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+# EMAIL_HOST_USER = 'hr@alienhouse.com'
+# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
-DEFAULT_FROM_EMAIL = 'Alienhouse HR <hr@alienhouse.com>'
-
-
-FRONTEND_URL = 'https://portal.alienhouse.com'
+# DEFAULT_FROM_EMAIL = 'Alienhouse HR <hr@alienhouse.com>'
 
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+# FRONTEND_URL = os.getenv("FRONTEND_URL")
+
+
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+CELERY_ACCEPT_CONTENT = [os.getenv("CELERY_ACCEPT_CONTENT")]
+CELERY_TASK_SERIALIZER = os.getenv("CELERY_TASK_SERIALIZER")
