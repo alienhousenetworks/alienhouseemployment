@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_head %}
+<style>
+    .employee-filter {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .employee-filter select {
+        min-width: 200px;
+    }
+    
+    .task-table th {
+        white-space: nowrap;
+    }
+    
+    .task-table td {
+        vertical-align: middle;
+    }
+    
+    .submission-date {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    
+    .remarks-cell {
+        max-width: 200px;
+    }
+    
+    .remarks-cell p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .filter-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 10px;
+    }
+    
+    .filter-tab {
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: var(--text-muted);
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .filter-tab:hover {
+        background: #f3f4f6;
+        color: var(--text-main);
+    }
+    
+    .filter-tab.active {
+        background: var(--secondary);
+        color: #fff;
+    }
+    
+    .employee-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .employee-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--secondary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .no-submission {
+        color: var(--text-muted);
+        font-style: italic;
+    }
+    
+    .overdue-indicator {
+        color: #dc2626;
+        font-weight: 500;
+    }
+    
+    .due-soon-indicator {
+        color: #f59e0b;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+    <h2>Team Tasks Dashboard</h2>
+    <p class="text-muted">Monitor and review all tasks assigned to your team members</p>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-4 mb-4">
+    <div class="card">
+        <div class="text-center">
+            <div style="font-size: 2rem; font-weight: bold; color: var(--primary);">{{ stats.total }}</div>
+            <div class="text-muted">Total Tasks</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="text-center">
+            <div style="font-size: 2rem; font-weight: bold; color: #f59e0b;">{{ stats.pending }}</div>
+            <div class="text-muted">Pending</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="text-center">
+            <div style="font-size: 2rem; font-weight: bold; color: #8b5cf6;">{{ stats.submitted }}</div>
+            <div class="text-muted">Awaiting Review</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="text-center">
+            <div style="font-size: 2rem; font-weight: bold; color: #16a34a;">{{ stats.completed }}</div>
+            <div class="text-muted">Completed</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="filter-tabs">
+    <a href="?filter=all" class="filter-tab {% if current_filter == 'all' %}active{% endif %}">
+        All Tasks ({{ stats.total }})
+    </a>
+    <a href="?filter=pending" class="filter-tab {% if current_filter == 'pending' %}active{% endif %}">
+        Pending ({{ stats.pending }})
+    </a>
+    <a href="?filter=submitted" class="filter-tab {% if current_filter == 'submitted' %}active{% endif %}">
+        Awaiting Review ({{ stats.submitted }})
+    </a>
+    <a href="?filter=completed" class="filter-tab {% if current_filter == 'completed' %}active{% endif %}">
+        Completed ({{ stats.completed }})
+    </a>
+    <a href="?filter=overdue" class="filter-tab {% if current_filter == 'overdue' %}active{% endif %}">
+        Overdue ({{ stats.overdue }})
+    </a>
+</div>
+
+<!-- Employee Filter -->
+<div class="employee-filter">
+    <form method="get" class="d-flex align-center gap-3">
+        <input type="hidden" name="filter" value="{{ current_filter }}">
+        <div class="form-group mb-0">
+            <label for="employee" class="mr-2">Filter by Employee:</label>
+            <select name="employee" id="employee" onchange="this.form.submit()">
+                <option value="">All Employees</option>
+                {% for emp in employees %}
+                    <option value="{{ emp.user.id }}" {% if selected_employee == emp.user.id|stringformat:"s" %}selected{% endif %}>
+                        {{ emp.user.full_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Apply</button>
+        <a href="{% url 'tasks:manager_dashboard' %}" class="btn btn-secondary">Clear</a>
+    </form>
+</div>
+
+<!-- Tasks Table -->
+{% if tasks %}
+    <div class="table-responsive">
+        <table class="task-table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Task Title</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Due Date</th>
+                    <th>Submission Date</th>
+                    <th>Remarks</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                    {% with task.submissions.all|dictsort:"submitted_at"|last as last_submission %}
+                    <tr>
+                        <td>
+                            <div class="employee-info">
+                                <div class="employee-avatar">
+                                    {{ task.assigned_to.all.first|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div>{{ task.assigned_to.all.first.full_name }}</div>
+                                    <small class="text-muted">{{ task.assigned_to.all.count }} {% if task.assigned_to.all.count > 1 %}assignees{% else %}assignee{% endif %}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <strong>{{ task.title }}</strong>
+                            <br>
+                            <small class="text-muted">{{ task.description|truncatewords:15 }}</small>
+                        </td>
+                        <td>
+                            <span class="priority-badge priority-{{ task.priority|lower }}">{{ task.get_priority_display }}</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ task.status|lower }}">{{ task.get_status_display }}</span>
+                        </td>
+                        <td>
+                            {% if task.is_overdue %}
+                                <span class="overdue-indicator" title="Task is overdue">
+                                    ⚠️ {{ task.due_date|date:"M d, Y" }}
+                                </span>
+                            {% elif task.due_date|date:"Y-m-d" == today|date:"Y-m-d" %}
+                                <span class="due-soon-indicator" title="Due today">
+                                    🔔 {{ task.due_date|date:"M d, Y" }}
+                                </span>
+                            {% else %}
+                                {{ task.due_date|date:"M d, Y" }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if last_submission %}
+                                <span class="submission-date">
+                                    {{ last_submission.submitted_at|date:"M d, Y H:i" }}
+                                </span>
+                            {% else %}
+                                <span class="no-submission">Not submitted</span>
+                            {% endif %}
+                        </td>
+                        <td class="remarks-cell">
+                            {% if last_submission.review_comments %}
+                                <p title="{{ last_submission.review_comments }}">
+                                    {{ last_submission.review_comments|truncatewords:10 }}
+                                </p>
+                            {% elif task.comments %}
+                                <p title="{{ task.comments }}">
+                                    {{ task.comments|truncatewords:10 }}
+                                </p>
+                            {% else %}
+                                <span class="no-submission">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                {% if task.status == 'SUBMITTED' or task.status == 'IN_PROGRESS' %}
+                                    <a href="{% url 'submissions:submission_review' last_submission.pk %}" class="btn btn-sm btn-primary" title="Review this submission">
+                                        Review
+                                    </a>
+                                {% elif task.status == 'APPROVED' or task.status == 'REJECTED' %}
+                                    <a href="{% url 'submissions:submission_review' last_submission.pk %}" class="btn btn-sm btn-secondary" title="View review details">
+                                        View
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted" style="font-size: 0.8rem;">-</span>
+                                {% endif %}
+                                <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-sm btn-info" title="Update task">
+                                    Update
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+        <nav aria-label="Task pagination" class="mt-4">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if selected_employee %}&employee={{ selected_employee }}{% endif %}">Previous</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">{{ page_obj.number }} of {{ paginator.num_pages }}</span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if current_filter %}&filter={{ current_filter }}{% endif %}{% if selected_employee %}&employee={{ selected_employee }}{% endif %}">Next</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+{% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+        </svg>
+        <h3>No Tasks Found</h3>
+        <p>{% if current_filter != 'all' or selected_employee %}No tasks match your current filters. Try clearing them.{% else %}You haven't assigned any tasks yet.{% endif %}</p>
+        <a href="{% url 'tasks:task_create' %}" class="btn btn-primary">Create New Task</a>
+    </div>
+{% endif %}
+
+{% endblock %}
+

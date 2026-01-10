@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Create New Task</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_title" class="form-label">Task Title</label>
+                            {{ form.title }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Description</label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_assigned_to" class="form-label">Assign to Employees</label>
+                            <!-- Helpful tip for the user -->
+                            <div class="alert alert-info py-2 small">
+                                <strong>Tip:</strong> To assign this task to multiple employees, hold down the <strong>Ctrl</strong> key (Windows) or <strong>Command</strong> key (Mac) while clicking on the names.
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <input type="text" id="employeeSearch" class="form-control form-control-sm w-50" placeholder="Search employees..." onkeyup="filterEmployees()">
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="selectAllEmployees()">Select All</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllEmployees()">Deselect All</button>
+                                </div>
+                            </div>
+                            {{ form.assigned_to }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_due_date" class="form-label">Due Date</label>
+                            {{ form.due_date }}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Create Task</button>
+                            <a href="{% url 'organization:manager_dashboard' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function selectAllEmployees() {
+        var select = document.getElementById('id_assigned_to');
+        for (var i = 0; i < select.options.length; i++) {
+            if (select.options[i].style.display !== 'none') {
+                select.options[i].selected = true;
+            }
+        }
+    }
+
+    function deselectAllEmployees() {
+        var select = document.getElementById('id_assigned_to');
+        for (var i = 0; i < select.options.length; i++) {
+            select.options[i].selected = false;
+        }
+    }
+
+    function filterEmployees() {
+        var input = document.getElementById('employeeSearch');
+        var filter = input.value.toLowerCase();
+        var select = document.getElementById('id_assigned_to');
+        var options = select.getElementsByTagName('option');
+
+        for (var i = 0; i < options.length; i++) {
+            var txtValue = options[i].textContent || options[i].innerText;
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                options[i].style.display = "";
+            } else {
+                options[i].style.display = "none";
+            }
+        }
+    }
+</script>
+{% endblock %}

@@ -24,5 +24,7 @@ urlpatterns = [
     path('tasks/', include('apps.tasks.urls')),
     path('submissions/', include('apps.submissions.urls')),
     path('notifications/', include('apps.notifications.urls')),
-    path('analytics/', include('analytics.urls')),
+    path('analytics/', include('analytics.urls', namespace='analytics')),
+    path('projects/', include('apps.projects.urls')),
+    path('', include('apps.core.urls'))
 ]

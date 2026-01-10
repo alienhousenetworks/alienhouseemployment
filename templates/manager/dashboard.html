@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">Manager Dashboard</h2>
+
+<!-- Team Overview -->
+<div class="card mb-4">
+    <h3>Quick Actions</h3>
+    <div class="grid grid-3">
+        <a href="{% url 'tasks:task_create' %}" class="btn btn-primary">
+            Create New Task
+        </a>
+        <a href="{% url 'tasks:manager_dashboard' %}" class="btn btn-secondary">
+            View Team Tasks
+        </a>
+        <a href="{% url 'tasks:task_reports' %}" class="btn btn-info">
+            View Reports
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-2 mb-4">
+    <!-- Recent Tasks -->
+    <div class="card">
+        <h3>Recent Tasks Assigned</h3>
+        <ul class="mb-0">
+            {% for task in recent_tasks %}
+            <li class="mb-2">
+                <strong>{{ task.title }}</strong>
+                <br><small class="text-muted">Assigned to: {{ task.assigned_to.user.full_name }}</small>
+            </li>
+            {% empty %}
+            <li class="text-muted">No recent tasks.</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Pending Reviews -->
+    <div class="card">
+        <h3>Pending Reviews</h3>
+        <ul class="mb-0">
+            {% for submission in pending_reviews %}
+            <li class="mb-2">
+                <strong>{{ submission.task.title }}</strong>
+                <br><small class="text-muted">By: {{ submission.employee.user.full_name }}</small>
+            </li>
+            {% empty %}
+            <li class="text-muted">No pending reviews.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<!-- Employee Performance -->
+<div class="card">
+    <h3>Employee Performance</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Tasks Completed</th>
+                <th>Average Rating</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for employee in employee_performance %}
+            <tr>
+                <td>{{ employee.employee.user.full_name }}</td>
+                <td class="text-center">{{ employee.tasks_completed }}</td>
+                <td class="text-center">
+                    {% if employee.average_rating %}
+                        <span class="text-success">{{ employee.average_rating|floatformat:1 }}</span>
+                    {% else %}
+                        <span class="text-muted">N/A</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'organization:employee_detail' employee.employee.id %}" class="btn btn-sm btn-primary">View Details</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center text-muted">No employee data available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

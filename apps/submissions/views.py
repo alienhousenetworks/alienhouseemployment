@@ -13,7 +13,7 @@ from apps.core.permissions import is_manager
 class SubmissionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Submission
     form_class = SubmissionForm
-    template_name = 'employee/submit_task.html'
+    template_name = 'employee/task_submission_form.html'
 
     def test_func(self):
         task = get_object_or_404(Task, pk=self.kwargs['task_id'])
@@ -64,12 +64,17 @@ class SubmissionCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
 class SubmissionReviewView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Submission
-    fields = ['status', 'review_comments']
-    template_name = 'manager/review_submission.html'
+    form_class = SubmissionForm
+    template_name = 'manager/task_review.html'
 
     def test_func(self):
         submission = self.get_object()
         return is_manager(self.request.user) and submission.task.assigned_by == self.request.user
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['submission'] = self.get_object()
+        return context
 
     def form_valid(self, form):
         submission = form.instance

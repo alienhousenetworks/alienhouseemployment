@@ -87,7 +87,7 @@ class EmployeeProductivityView(generics.ListAPIView):
 
             productivity_data.append({
                 'user_id': user.id,
-                'user_name': getattr(user, 'full_name', user.username),
+                'user_name': getattr(user, 'full_name', user.email),
                 'tasks_completed': completed_tasks,
                 'tasks_overdue': overdue_tasks,
                 'average_completion_time': avg_completion_time,
@@ -268,7 +268,11 @@ class EmployeeAnalyticsView(LoginRequiredMixin, TemplateView):
         # KPIs
         total_tasks = tasks.count()
         completed_tasks = tasks.filter(status='APPROVED').count()
-        overdue_tasks = tasks.filter(is_overdue=True).count()
+        # overdue_tasks = tasks.filter(is_overdue=True).count()
+        from django.utils.timezone import now
+
+        today = now().date()
+        overdue_tasks = tasks.filter(due_date__lt=today).exclude(status='APPROVED').count()
         completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
 
         # Time efficiency: total hours logged vs estimated (simplified)
@@ -330,7 +334,11 @@ class ManagerAnalyticsView(LoginRequiredMixin, TemplateView):
         # Department KPIs
         total_tasks = tasks.count()
         completed_tasks = tasks.filter(status='APPROVED').count()
-        overdue_tasks = tasks.filter(is_overdue=True).count()
+        # overdue_tasks = tasks.filter(is_overdue=True).count()
+        from django.utils.timezone import now
+
+        today = now().date()
+        overdue_tasks = tasks.filter(due_date__lt=today).exclude(status='APPROVED').count()
         completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
 
         # Employee productivity
@@ -341,7 +349,7 @@ class ManagerAnalyticsView(LoginRequiredMixin, TemplateView):
             emp_total = emp_tasks.count()
             emp_rate = (emp_completed / emp_total * 100) if emp_total > 0 else 0
             employee_stats.append({
-                'name': getattr(emp.user, 'full_name', emp.user.username),
+                'name': getattr(emp.user, 'full_name', emp.user.email),
                 'total_tasks': emp_total,
                 'completed_tasks': emp_completed,
                 'completion_rate': emp_rate,
@@ -404,7 +412,11 @@ class DepartmentAnalyticsView(LoginRequiredMixin, TemplateView):
         # Department KPIs
         total_tasks = tasks.count()
         completed_tasks = tasks.filter(status='APPROVED').count()
-        overdue_tasks = tasks.filter(is_overdue=True).count()
+        # overdue_tasks = tasks.filter(is_overdue=True).count()
+        from django.utils.timezone import now
+
+        today = now().date()
+        overdue_tasks = tasks.filter(due_date__lt=today).exclude(status='APPROVED').count()
         completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
 
         # Employee productivity in department
@@ -416,7 +428,7 @@ class DepartmentAnalyticsView(LoginRequiredMixin, TemplateView):
             emp_total = emp_tasks.count()
             emp_rate = (emp_completed / emp_total * 100) if emp_total > 0 else 0
             employee_stats.append({
-                'name': getattr(emp.user, 'full_name', emp.user.username),
+                'name': getattr(emp.user, 'full_name', emp.user.email),
                 'total_tasks': emp_total,
                 'completed_tasks': emp_completed,
                 'completion_rate': emp_rate,
@@ -461,7 +473,11 @@ class AdminAnalyticsView(LoginRequiredMixin, TemplateView):
         # Overall KPIs
         total_tasks = tasks.count()
         completed_tasks = tasks.filter(status='APPROVED').count()
-        overdue_tasks = tasks.filter(is_overdue=True).count()
+        # overdue_tasks = tasks.filter(is_overdue=True).count()
+        from django.utils.timezone import now
+
+        today = now().date()
+        overdue_tasks = tasks.filter(due_date__lt=today).exclude(status='APPROVED').count()
         completion_rate = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
 
         # Department-wise stats

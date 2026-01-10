@@ -1,81 +1,51 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}Create Task{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h2>Create New Task</h2>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.title.id_for_label }}" class="form-label">Title</label>
-                                    {{ form.title }}
-                                    {% if form.title.errors %}
-                                        <div class="text-danger">{{ form.title.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.priority.id_for_label }}" class="form-label">Priority</label>
-                                    {{ form.priority }}
-                                    {% if form.priority.errors %}
-                                        <div class="text-danger">{{ form.priority.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
-                            {{ form.description }}
-                            {% if form.description.errors %}
-                                <div class="text-danger">{{ form.description.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.due_date.id_for_label }}" class="form-label">Due Date</label>
-                                    {{ form.due_date }}
-                                    {% if form.due_date.errors %}
-                                        <div class="text-danger">{{ form.due_date.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="{{ form.required_skills.id_for_label }}" class="form-label">Required Skills</label>
-                                    {{ form.required_skills }}
-                                    {% if form.required_skills.errors %}
-                                        <div class="text-danger">{{ form.required_skills.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="{{ form.assigned_to.id_for_label }}" class="form-label">Assign To</label>
-                            {{ form.assigned_to }}
-                            {% if form.assigned_to.errors %}
-                                <div class="text-danger">{{ form.assigned_to.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'tasks:task_list' %}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Create Task</button>
-                        </div>
-                    </form>
-                </div>
+<h2 class="mb-4">Create New Task</h2>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_title">Task Title</label>
+            {{ form.title }}
+        </div>
+
+        <div class="form-group">
+            <label for="id_description">Description</label>
+            {{ form.description }}
+        </div>
+
+        <div class="grid grid-2">
+            <div class="form-group">
+                <label for="id_due_date">Due Date</label>
+                {{ form.due_date }}
+            </div>
+            <div class="form-group">
+                <label for="id_priority">Priority</label>
+                {{ form.priority }}
             </div>
         </div>
-    </div>
+
+        <div class="form-group">
+            <label for="id_required_skills">Required Skills</label>
+            {{ form.required_skills }}
+            <small class="text-muted">Comma-separated skills (optional)</small>
+        </div>
+
+        <div class="form-group">
+            <label for="id_assigned_to">Assign To</label>
+            {{ form.assigned_to }}
+        </div>
+
+        <div class="d-flex justify-between mt-4">
+            <a href="{% url 'tasks:manager_dashboard' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Create Task</button>
+        </div>
+    </form>
 </div>
 {% endblock %}
+

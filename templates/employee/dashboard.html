@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block extra_head %}
+<style>
+    .task-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .task-list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .task-list-item:last-child {
+        border-bottom: none;
+    }
+    
+    .task-info {
+        flex: 1;
+    }
+    
+    .task-title {
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 4px;
+    }
+    
+    .task-meta {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    
+    .quick-actions {
+        display: flex;
+        gap: 8px;
+        margin-left: 15px;
+    }
+    
+    .dashboard-section {
+        margin-bottom: 30px;
+    }
+    
+    .dashboard-section:last-child {
+        margin-bottom: 0;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin: 0;
+    }
+    
+    .view-all-link {
+        font-size: 0.9rem;
+        color: var(--secondary);
+        text-decoration: none;
+    }
+    
+    .view-all-link:hover {
+        text-decoration: underline;
+    }
+    
+    .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .status-dot.pending { background: #f59e0b; }
+    .status-dot.in_progress { background: #3b82f6; }
+    .status-dot.submitted { background: #8b5cf6; }
+    .status-dot.approved { background: #16a34a; }
+    .status-dot.rejected { background: #dc2626; }
+    
+    .quick-stat {
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .quick-stat-value {
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--primary);
+    }
+    
+    .quick-stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 5px;
+    }
+    
+    .empty-task-list {
+        text-align: center;
+        padding: 30px;
+        color: var(--text-muted);
+    }
+    
+    .empty-task-list svg {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 10px;
+        opacity: 0.5;
+    }
+    
+    .priority-indicator {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 8px;
+    }
+    
+    .priority-indicator.high {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .priority-indicator.medium {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .priority-indicator.low {
+        background: #f3f4f6;
+        color: #374151;
+    }
+    
+    .due-warning {
+        color: #dc2626;
+        font-weight: 500;
+    }
+    
+    .due-soon {
+        color: #f59e0b;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Employee Dashboard</h2>
+
+<!-- Quick Stats -->
+<div class="grid grid-4 mb-4">
+    <div class="card quick-stat">
+        <div class="quick-stat-value">{{ stats.total }}</div>
+        <div class="quick-stat-label">Total Tasks</div>
+    </div>
+    <div class="card quick-stat">
+        <div class="quick-stat-value" style="color: #f59e0b;">{{ stats.pending }}</div>
+        <div class="quick-stat-label">Pending</div>
+    </div>
+    <div class="card quick-stat">
+        <div class="quick-stat-value" style="color: #3b82f6;">{{ stats.in_progress }}</div>
+        <div class="quick-stat-label">In Progress</div>
+    </div>
+    <div class="card quick-stat">
+        <div class="quick-stat-value" style="color: #16a34a;">{{ stats.completed }}</div>
+        <div class="quick-stat-label">Completed</div>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <!-- My Tasks Section -->
+    <div class="dashboard-section">
+        <div class="card">
+            <div class="section-header">
+                <h3 class="section-title">My Tasks</h3>
+                <a href="{% url 'tasks:employee_dashboard' %}" class="view-all-link">View All →</a>
+            </div>
+            
+            {% if my_tasks %}
+                <ul class="task-list">
+                    {% for task in my_tasks|slice:":5" %}
+                    <li class="task-list-item">
+                        <div class="task-info">
+                            <div class="task-title">
+                                <span class="status-dot {{ task.status|lower }}"></span>
+                                {{ task.title }}
+                                <span class="priority-indicator {{ task.priority|lower }}">{{ task.priority }}</span>
+                            </div>
+                            <div class="task-meta">
+                                {% if task.is_overdue %}
+                                    <span class="due-warning">⚠️ Overdue: {{ task.due_date|date:"M d, Y" }}</span>
+                                {% elif task.due_date|date:"Y-m-d" == today|date:"Y-m-d" %}
+                                    <span class="due-soon">🔔 Due Today</span>
+                                {% else %}
+                                    Due: {{ task.due_date|date:"M d, Y" }}
+                                {% endif %}
+                                · {{ task.get_status_display }}
+                            </div>
+                        </div>
+                        <div class="quick-actions">
+                            {% if task.status == 'PENDING' %}
+                                <a href="{% url 'tasks:task_accept' task.pk %}" class="btn btn-sm btn-success" title="Accept and start working">Accept</a>
+                            {% elif task.status == 'IN_PROGRESS' %}
+                                <a href="{% url 'submissions:submission_create' task.pk %}" class="btn btn-sm btn-primary" title="Submit your completed work">Submit</a>
+                            {% else %}
+                                <a href="{% url 'tasks:employee_dashboard' %}" class="btn btn-sm btn-secondary" title="View details">View</a>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-task-list">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <p>No tasks assigned yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Manager Info Section -->
+    <div class="dashboard-section">
+        <div class="card">
+            <h3 class="section-title" style="margin-bottom: 15px;">Manager Information</h3>
+            
+            {% if user.employee_profile.manager %}
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--secondary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 600;">
+                        {{ user.employee_profile.manager.user.full_name|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 1.1rem;">{{ user.employee_profile.manager.user.full_name }}</div>
+                        <div class="text-muted">{{ user.employee_profile.manager.user.email }}</div>
+                    </div>
+                </div>
+                
+                <div style="background: #f9fafb; border-radius: 8px; padding: 15px;">
+                    <h4 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 10px;">Quick Actions</h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <a href="{% url 'tasks:employee_dashboard' %}" class="btn btn-primary w-full">
+                            📋 View All My Tasks
+                        </a>
+                        <a href="{% url 'tasks:time_log_create' my_tasks.first.pk|default:'0' %}" class="btn btn-secondary w-full {% if not my_tasks %}disabled{% endif %}">
+                            ⏱️ Log Time
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-task-list">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <p>No manager assigned yet</p>
+                    <small class="text-muted">Contact your administrator for assistance</small>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Performance Summary -->
+        <div class="card" style="margin-top: 20px;">
+            <h3 class="section-title" style="margin-bottom: 15px;">Performance Summary</h3>
+            
+            <div style="margin-bottom: 20px;">
+                <div class="d-flex justify-between mb-2">
+                    <span>Completion Rate</span>
+                    <span class="text-primary">{% if stats.total %}{% widthratio stats.completed stats.total 100 %}{% else %}0{% endif %}%</span>
+                </div>
+                <div class="progress-bar" style="height: 10px;">
+                    <div class="progress-fill" style="width: {% if stats.total %}{% widthratio stats.completed stats.total 100 %}{% else %}0{% endif %}%;"></div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-between mb-2">
+                <span>Tasks Awaiting Review</span>
+                <span class="badge badge-submitted">{{ stats.submitted }}</span>
+            </div>
+            
+            <div class="d-flex justify-between">
+                <span>Overdue Tasks</span>
+                <span class="badge badge-rejected">{{ stats.overdue }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Helpful Tips -->
+<div class="card" style="margin-top: 20px;">
+    <h3>💡 Quick Tips</h3>
+    <div class="grid grid-3" style="margin-top: 15px;">
+        <div>
+            <strong>Accept Tasks</strong>
+            <p class="text-muted" style="font-size: 0.9rem; margin-top: 5px;">
+                Click "Accept" on pending tasks to start working on them. The status will change to "In Progress".
+            </p>
+        </div>
+        <div>
+            <strong>Submit Work</strong>
+            <p class="text-muted" style="font-size: 0.9rem; margin-top: 5px;">
+                When you're done, click "Submit" to send your work for review. You can attach files and add notes.
+            </p>
+        </div>
+        <div>
+            <strong>Track Progress</strong>
+            <p class="text-muted" style="font-size: 0.9rem; margin-top: 5px;">
+                Check your dashboard regularly to see task status updates and manager feedback.
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

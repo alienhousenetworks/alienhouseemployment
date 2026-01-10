@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="card text-center" style="padding: 60px 40px;">
+    <h1 style="font-size: 2.2rem; font-weight: 700; margin-bottom: 15px;">
+        Employee Management Portal
+    </h1>
+    <p style="font-size: 1.05rem; color: var(--text-muted); max-width: 700px; margin: 0 auto;">
+        A centralized platform to manage employees, tasks, projects, and performance —
+        built for efficiency and transparency.
+    </p>
+
+    <div class="mt-4">
+        <a href="{% url 'login' %}" class="btn btn-primary">Get Started</a>
+        <a href="#features" class="btn btn-secondary">Explore Features</a>
+    </div>
+</section>
+
+<!-- ROLE CARDS -->
+<section class="grid grid-3 mt-5">
+    <div class="card">
+        <h3>Employees</h3>
+        <p class="text-muted mb-4">
+            View assigned tasks, submit work, track timelines, and manage your profile.
+        </p>
+        <a href="{% url 'login' %}" class="btn btn-primary">Employee Login</a>
+    </div>
+
+    <div class="card">
+        <h3>Managers</h3>
+        <p class="text-muted mb-4">
+            Assign tasks, monitor progress, review submissions, and manage teams.
+        </p>
+        <a href="{% url 'login' %}" class="btn btn-primary">Manager Login</a>
+    </div>
+
+    <div class="card">
+        <h3>Administrators</h3>
+        <p class="text-muted mb-4">
+            Control users, oversee projects, configure system settings, and analytics.
+        </p>
+        <a href="{% url 'admin:index' %}" class="btn btn-danger">Admin Panel</a>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="card mt-5">
+    <h2 class="text-center mb-4">Platform Capabilities</h2>
+
+    <div class="grid grid-3">
+        <div>
+            <h4>Task Management</h4>
+            <p class="text-muted">
+                Assign, prioritize, and track tasks with deadlines and status updates.
+            </p>
+        </div>
+
+        <div>
+            <h4>Employee Profiles</h4>
+            <p class="text-muted">
+                Centralized employee records including roles, skills, and contracts.
+            </p>
+        </div>
+
+        <div>
+            <h4>Projects & Milestones</h4>
+            <p class="text-muted">
+                Organize tasks within projects and monitor delivery timelines.
+            </p>
+        </div>
+
+        <div>
+            <h4>Time Tracking</h4>
+            <p class="text-muted">
+                Track working hours per task for better productivity insights.
+            </p>
+        </div>
+
+        <div>
+            <h4>Reports & Analytics</h4>
+            <p class="text-muted">
+                Gain visibility into performance, workloads, and project health.
+            </p>
+        </div>
+
+        <div>
+            <h4>Notifications</h4>
+            <p class="text-muted">
+                Automated alerts for assignments, deadlines, and approvals.
+            </p>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

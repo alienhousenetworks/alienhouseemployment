@@ -1,26 +1,39 @@
-from django.shortcuts import redirect, render, get_object_or_404
-from django.contrib.auth import login, logout
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.forms import SetPasswordForm, AuthenticationForm
-from .models import User
 
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.forms import SetPasswordForm
+
+from apps.accounts.models import User
+from apps.accounts.forms import CustomAuthenticationForm
+from apps.core.permissions import is_admin, is_manager, is_employee
 
 def login_view(request):
-    form = AuthenticationForm(request, data=request.POST or None)
+    form = CustomAuthenticationForm(request, data=request.POST or None)
 
-    if form.is_valid():
+    if request.method == "POST" and form.is_valid():
         user = form.get_user()
         login(request, user)
 
-        # LONG LOGIN SUPPORT
-        if user.role == 'ADMIN':
-            request.session.set_expiry(60 * 60 * 24)      # 1 day
-        else:
-            request.session.set_expiry(60 * 60 * 24 * 90) # 90 days
+        if user.is_superuser or is_admin(user):
+            request.session.set_expiry(60 * 60 * 24)
+            return redirect('admin:index')
 
-        return redirect('dashboard')
+        elif is_manager(user):
+            request.session.set_expiry(60 * 60 * 24 * 30)
+            return redirect('organization:manager_dashboard')
+
+        elif is_employee(user):
+            request.session.set_expiry(60 * 60 * 24 * 90)
+            return redirect('dashboard')
+
+        return redirect('login')
 
     return render(request, 'auth/login.html', {'form': form})
+
+
 
 
 def logout_view(request):
@@ -46,3 +59,13 @@ def set_password_view(request, uid, token):
         return redirect('dashboard')
 
     return render(request, 'auth/set_password.html', {'form': form})
+
+@login_required
+def dashboard_view(request):
+    if request.user.role == 'EMPLOYEE':
+        return redirect('organization:employee_dashboard')
+    elif request.user.role == 'MANAGER':
+        return redirect('organization:manager_dashboard')
+    else:
+        # Admin or other - redirect to home page instead of admin
+        return redirect('core:home_view')

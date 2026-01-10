@@ -1,34 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Management Portal</title>
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
-        header { background: #333; color: #fff; padding: 10px; text-align: center; }
-        nav a { margin: 0 10px; color: #fff; text-decoration: none; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #eee; }
-        .btn { padding: 6px 12px; margin: 5px; border: none; cursor: pointer; }
-        .btn-primary { background: #007bff; color: #fff; }
-        .btn-danger { background: #dc3545; color: #fff; }
-        .message { padding: 10px; background: #d4edda; color: #155724; margin-bottom: 20px; border-radius: 4px; }
-    </style>
+
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+
 <header>
     <h1>Employee Management Portal</h1>
+    {% if user.is_authenticated %}
+        {% if user.role == 'EMPLOYEE' and user.employee_profile.employee_id %}
+            <span class="employee-id-badge">ID: {{ user.employee_profile.employee_id }}</span>
+        {% elif user.role == 'MANAGER' and user.manager_profile %}
+            <span class="employee-id-badge">ID: {{ user.manager_profile.user.employee_profile.employee_id|default:'-' }}</span>
+        {% endif %}
+    {% endif %}
     <nav>
-        <a href="{% url 'contract-test' %}">Contract Actions</a>
-        <a href="{% url 'employee-list' %}">Employee List</a>
-        <a href="{% url 'logout' %}">Logout</a>
+        {% if user.is_authenticated %}
+            {% if user.role == 'ADMIN' %}
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <a href="{% url 'organization:employee-list' %}">Organization</a>
+                <a href="{% url 'analytics:admin_analytics' %}">Analytics</a>
+                <a href="{% url 'projects:project_list' %}">Projects</a>
+                <a href="{% url 'admin:index' %}">Admin</a>
+            {% elif user.role == 'MANAGER' %}
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <a href="{% url 'tasks:task_create' %}">Create Task</a>
+                <a href="{% url 'tasks:manager_dashboard' %}">Team Tasks</a>
+                <a href="{% url 'tasks:task_list' %}">All Tasks</a>
+                <a href="{% url 'organization:employee-list' %}">Organization</a>
+                <a href="{% url 'analytics:manager_analytics' %}">Analytics</a>
+                <a href="{% url 'projects:project_list' %}">Projects</a>
+            {% elif user.role == 'EMPLOYEE' %}
+                <a href="{% url 'dashboard' %}">Dashboard</a>
+                <a href="{% url 'tasks:employee_dashboard' %}">My Tasks</a>
+                <a href="{% url 'tasks:task_list' %}">All Tasks</a>
+                <a href="{% url 'tasks:task_list' %}">Time Log</a>
+            {% endif %}
+            <a href="{% url 'logout' %}">Logout</a>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+        {% endif %}
     </nav>
 </header>
+
 <main>
     {% block content %}{% endblock %}
 </main>
+
+<footer>
+    © {{ now|date:"Y" }} Alienhouse Networks · Internal Management System
+</footer>
+
 </body>
 </html>

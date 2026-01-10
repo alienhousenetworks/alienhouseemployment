@@ -41,7 +41,7 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     success_url = reverse_lazy('projects:project_list')
 
     def test_func(self):
-        return hasattr(self.request.user, 'manager_profile')
+        return self.request.user.is_superuser or hasattr(self.request.user, 'manager_profile')
 
     def form_valid(self, form):
         form.instance.manager = self.request.user

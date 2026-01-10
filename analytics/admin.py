@@ -1,3 +1,4 @@
 from django.contrib import admin
 
-# Register your models here.
+# Analytics app doesn't have models, so no registrations needed
+# This file is created for consistency
